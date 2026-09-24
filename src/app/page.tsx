@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
 import type { RankedPaper, SearchResponse } from "@/lib/types";
@@ -162,6 +162,21 @@ export default function Home() {
   const [selected, setSelected] = useState<RankedPaper | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
   const [saved, setSaved] = useState<RankedPaper[]>([]);
+
+  // Footer section links: the landing sections unmount once a search runs,
+  // so a plain #anchor would point nowhere. Return to the landing first,
+  // then scroll once the section is back in the DOM.
+  const goToSection = (id: string) => (e: ReactMouseEvent) => {
+    if (status === "idle") return; // default anchor behavior is fine
+    e.preventDefault();
+    setStatus("idle");
+    setView("results");
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      });
+    });
+  };
 
   // Hydrate client-side storage after mount (SSR-safe).
   useEffect(() => {
@@ -735,6 +750,7 @@ export default function Home() {
                       {l.href ? (
                         <a
                           href={l.href}
+                          onClick={l.href.startsWith("#") ? goToSection(l.href.slice(1)) : undefined}
                           target={l.href.startsWith("http") ? "_blank" : undefined}
                           rel="noreferrer"
                           className="font-mono text-[11px] text-neutral-500 transition-colors hover:text-neutral-950"
