@@ -1,26 +1,232 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: #ffffff;
+  --color-foreground: #0a0a0a;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  color: #0a0a0a;
+}
+
+::selection {
+  background: #0a0a0a;
+  color: #ffffff;
+}
+
+/* Streaming caret: a single blinking block, no layout shift. */
+.stream-caret::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  margin-left: 3px;
+  vertical-align: -2px;
+  background: #0a0a0a;
+  animation: caret-blink 1s steps(2, start) infinite;
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Fixed-height result rows: CSS containment kills layout shift on paint. */
+.row-contain {
+  contain: content;
+}
+
+/* Quiet, thin scrollbars. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d4 transparent;
+}
+
+
+/* Summary panel slides in once on open; content squeeze is handled by a
+   padding transition on the page shell. 60 fps: transform-only. */
+@keyframes panel-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.panel-in {
+  animation: panel-in 0.22s ease-out;
+}
+
+/* Faint engineering-paper dot grid for the hero; masked to fade at edges. */
+.dot-grid {
+  background-image: radial-gradient(circle, #e5e5e5 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* The one signature motion: pixel cells tick into place on mount.
+   Stepped (not smooth) so it feels digital, not slick. Transform-only. */
+@keyframes cell-in {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.glyph-cell {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cell-in 0.18s steps(2, end) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glyph-cell {
+    animation: none;
+  }
+}
+
+/* Fig 00 galaxy: differential rotation bands + per-star twinkle.
+   Zero JS after mount — bands are CSS-animated groups. */
+@keyframes galaxy-rot {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.galaxy-spin-a,
+.galaxy-spin-b,
+.galaxy-spin-c {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: galaxy-rot linear infinite;
+}
+
+.galaxy-spin-a {
+  animation-duration: 46s;
+}
+
+.galaxy-spin-b {
+  animation-duration: 84s;
+}
+
+.galaxy-spin-c {
+  animation-duration: 140s;
+}
+
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.galaxy-star {
+  animation: star-twinkle 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .galaxy-spin-a,
+  .galaxy-spin-b,
+  .galaxy-spin-c,
+  .galaxy-star {
+    animation: none;
+  }
+}
+
+/* Galaxy animation pass 2: pixel-stepped rotation (ticks, not glides),
+   counter-drifting field for parallax, periodic meteor, flickering core. */
+.galaxy-spin-a {
+  animation-duration: 40s;
+  animation-timing-function: steps(140);
+}
+
+.galaxy-spin-b {
+  animation-timing-function: steps(120);
+}
+
+.galaxy-spin-c {
+  animation-timing-function: steps(100);
+}
+
+.galaxy-star {
+  animation-timing-function: steps(2, end);
+}
+
+.galaxy-drift {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: galaxy-rot 240s linear infinite reverse;
+}
+
+@keyframes meteor-fly {
+  0% {
+    transform: rotate(22deg) translateX(-40px);
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+  9% {
+    transform: rotate(22deg) translateX(520px);
+    opacity: 0;
+  }
+  100% {
+    transform: rotate(22deg) translateX(520px);
+    opacity: 0;
+  }
+}
+
+.galaxy-meteor {
+  animation: meteor-fly 12s linear infinite;
+  opacity: 0;
+}
+
+@keyframes core-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.galaxy-core {
+  animation: core-pulse 5s steps(2, end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .galaxy-drift,
+  .galaxy-meteor,
+  .galaxy-core {
+    animation: none;
+  }
+}
+
+/* Galaxy animation pass 3: smooth continuous motion (steps were too juddery). */
+.galaxy-spin-a,
+.galaxy-spin-b,
+.galaxy-spin-c,
+.galaxy-drift {
+  animation-timing-function: linear;
+}
+
+.galaxy-star,
+.galaxy-core {
+  animation-timing-function: ease-in-out;
 }
